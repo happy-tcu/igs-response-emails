@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Isomo Graduate Scholars — Your Decision</title>
+<style>
+  :root {
+    --isomo-blue: #1a4fa0; --isomo-blue-dk: #123b7a; --isomo-green: #1e9e6a; --isomo-gold: #f4b942;
+    --ink: #14213a; --muted: #5a6a85; --line: #d9e2f0; --line-2: #c4d2e8; --paper: #eef3fa; --card: #fff;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--ink); background: var(--paper); min-height: 100vh; display: flex; flex-direction: column; -webkit-font-smoothing: antialiased;
+  }
+  .bg { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .bg svg { width: 100%; height: 100%; display: block; }
+  #confetti { position: fixed; inset: 0; pointer-events: none; z-index: 60; }
+
+  header {
+    position: relative; z-index: 10; display: flex; align-items: center; justify-content: space-between;
+    padding: 18px 28px; background: rgba(255,255,255,.82); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; align-items: center; gap: 12px; }
+  .brand .mark { width: 34px; height: 34px; flex: none; }
+  .brand .name { font-weight: 800; font-size: 18px; letter-spacing: .3px; color: var(--isomo-blue); }
+  .brand .name span { color: var(--isomo-green); }
+  .brand .sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
+  .who { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--muted); }
+  .who .avatar { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, var(--isomo-blue), var(--isomo-green)); color: #fff; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+  .who button.link { background: none; border: none; color: var(--muted); cursor: pointer; font: inherit; font-size: 12px; text-decoration: underline; padding: 0; box-shadow: none; }
+
+  main { position: relative; z-index: 10; flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+  .card { position: relative; width: min(620px, 94vw); background: var(--card); border: 1px solid var(--line); border-radius: 4px; box-shadow: 0 30px 70px rgba(20,33,58,.10); overflow: hidden; }
+  .card::before, .card::after { content: ""; position: absolute; width: 26px; height: 26px; pointer-events: none; }
+  .card::before { top: 14px; left: 14px; border-top: 2px solid var(--isomo-blue); border-left: 2px solid var(--isomo-blue); }
+  .card::after { bottom: 14px; right: 14px; border-bottom: 2px solid var(--isomo-blue); border-right: 2px solid var(--isomo-blue); }
+  .card-inner { padding: 46px 48px 40px; text-align: center; position: relative; }
+
+  .rule { display: flex; align-items: center; gap: 14px; margin: 22px auto; width: 70%; }
+  .rule::before, .rule::after { content: ""; height: 1px; flex: 1; background: var(--line-2); }
+  .rule .node { width: 7px; height: 7px; transform: rotate(45deg); border: 1px solid var(--isomo-blue); }
+  .kicker { font-size: 11px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+
+  .stage { transition: opacity .35s ease; }
+  .hidden { display: none; }
+
+  .seal { width: 96px; height: 96px; margin: 4px auto 20px; display: block; }
+  .seal .spin { transform-origin: 50% 50%; animation: spin 22s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .lede { font-size: 23px; font-weight: 700; margin: 0 0 8px; }
+  .sub-text { font-size: 15px; color: var(--muted); margin: 0 0 28px; line-height: 1.6; }
+
+  button {
+    font: inherit; font-weight: 700; font-size: 15px; color: #fff; background: var(--isomo-blue);
+    border: none; border-radius: 3px; padding: 14px 32px; cursor: pointer; letter-spacing: .3px;
+    transition: transform .15s ease, box-shadow .15s ease, background .2s ease; box-shadow: 0 10px 24px rgba(26,79,160,.28);
+  }
+  button:hover:not(:disabled) { transform: translateY(-2px); background: var(--isomo-blue-dk); box-shadow: 0 14px 30px rgba(18,59,122,.34); }
+  button:active { transform: translateY(0); }
+  button:disabled { opacity: .6; cursor: default; }
+  button.ghost { background: #fff; color: var(--isomo-blue); border: 1.5px solid var(--line-2); box-shadow: none; }
+  button.ghost:hover:not(:disabled) { background: var(--paper); border-color: var(--isomo-blue); }
+
+  input[type=email] {
+    font: inherit; font-size: 15px; width: 100%; max-width: 340px; padding: 13px 16px; margin: 0 auto 16px;
+    display: block; border: 1.5px solid var(--line-2); border-radius: 3px; color: var(--ink); text-align: center;
+  }
+  input[type=email]:focus { outline: none; border-color: var(--isomo-blue); }
+
+  .scan { width: 120px; height: 120px; margin: 6px auto 14px; }
+  .dots { font-size: 26px; letter-spacing: 8px; color: var(--isomo-blue); }
+
+  .headline { font-size: 36px; font-weight: 800; margin: 4px 0 2px; line-height: 1.1; animation: pop .55s cubic-bezier(.2,1.4,.4,1) both; }
+  .headline.grad { background: linear-gradient(90deg, var(--isomo-blue), var(--isomo-green)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  @keyframes pop { from { transform: scale(.7); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .name-line { font-size: 18px; font-weight: 700; margin: 12px 0 2px; }
+  .detail { font-size: 16px; color: #3c4a64; line-height: 1.7; margin: 0 auto 8px; max-width: 92%; }
+  .detail strong { color: var(--isomo-blue); }
+
+  .status-tag { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 16px; border-radius: 2px; margin-bottom: 6px; border: 1px solid; }
+  .status-tag .sq { width: 8px; height: 8px; }
+  .tag-admit { color: var(--isomo-green); border-color: rgba(30,158,106,.4); background: rgba(30,158,106,.07); } .tag-admit .sq { background: var(--isomo-green); }
+  .tag-wait { color: #b9852a; border-color: rgba(244,185,66,.5); background: rgba(244,185,66,.10); } .tag-wait .sq { background: var(--isomo-gold); }
+  .tag-decline { color: var(--muted); border-color: var(--line-2); background: var(--paper); } .tag-decline .sq { background: var(--muted); }
+
+  .info { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 1px solid var(--line); margin: 18px 0 4px; text-align: left; }
+  .info div { padding: 12px 16px; }
+  .info div + div { border-left: 1px solid var(--line); }
+  .info .row2 { grid-column: 1 / -1; border-top: 1px solid var(--line); border-left: none; }
+  .info .lbl { font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); }
+  .info .val { font-size: 15px; font-weight: 600; margin-top: 3px; }
+
+  .nextsteps { text-align: left; margin-top: 22px; }
+  .nextsteps h4 { margin: 0 0 10px; font-size: 11px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--muted); }
+  .nextsteps ol { margin: 0; padding: 0; list-style: none; counter-reset: step; }
+  .nextsteps li { counter-increment: step; position: relative; padding: 8px 0 8px 38px; font-size: 14.5px; color: #3c4a64; border-bottom: 1px solid var(--paper); }
+  .nextsteps li:last-child { border-bottom: none; }
+  .nextsteps li::before { content: counter(step); position: absolute; left: 0; top: 7px; width: 24px; height: 24px; border: 1.5px solid var(--isomo-blue); color: var(--isomo-blue); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+
+  .actions { display: flex; gap: 12px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+  .responded { margin-top: 20px; font-size: 14px; color: var(--isomo-green); font-weight: 600; }
+
+  .msg { font-size: 14px; color: var(--muted); margin-top: 12px; line-height: 1.6; }
+  .msg.err { color: #b3261e; }
+
+  footer { position: relative; z-index: 10; text-align: center; font-size: 12px; color: var(--muted); padding: 16px; border-top: 1px solid var(--line); background: rgba(255,255,255,.6); }
+  footer span { color: var(--line-2); margin: 0 8px; }
+
+  @media (max-width: 520px) {
+    .card-inner { padding: 36px 24px 30px; }
+    .info { grid-template-columns: 1fr; } .info div + div { border-left: none; border-top: 1px solid var(--line); }
+    .headline { font-size: 30px; }
+  }
+</style>
+</head>
+<body>
+  <div class="bg" aria-hidden="true">
+    <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
+      <defs>
+        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#dfe7f3" stroke-width="1"/></pattern>
+        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>
+      </defs>
+      <rect width="1200" height="800" fill="url(#grid)"/>
+      <g fill="none" stroke="#cdd9ec" stroke-width="1.2"><circle cx="1050" cy="120" r="60"/><circle cx="1050" cy="120" r="110"/><circle cx="1050" cy="120" r="160"/></g>
+      <g stroke="#cdd9ec" stroke-width="1.2"><line x1="-20" y1="640" x2="260" y2="360"/><line x1="-20" y1="720" x2="340" y2="360"/><line x1="60" y1="800" x2="420" y2="440"/></g>
+      <g stroke="#cfdbed" stroke-width="1.2"><path d="M200 130 h16 M208 122 v16"/><path d="M940 560 h16 M948 552 v16"/><path d="M520 700 h16 M528 692 v16"/><path d="M120 420 h16 M128 412 v16"/></g>
+      <rect width="1200" height="800" fill="url(#fade)"/>
+    </svg>
+  </div>
+  <canvas id="confetti"></canvas>
+
+  <header>
+    <div class="brand">
+      <svg class="mark" viewBox="0 0 40 40" fill="none">
+        <rect x="3" y="3" width="34" height="34" stroke="#1a4fa0" stroke-width="2"/>
+        <path d="M11 29 V15 L20 22 L29 15 V29" stroke="#1e9e6a" stroke-width="2.4" fill="none" stroke-linejoin="round"/>
+      </svg>
+      <div><div class="name">Isom<span>o</span></div><div class="sub">Graduate Scholars</div></div>
+    </div>
+    <div class="who" id="who" style="visibility:hidden">
+      <span id="who-email"></span>
+      <button class="link" id="signout">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="card"><div class="card-inner">
+
+      <!-- Boot / loading -->
+      <div id="stage-boot" class="stage">
+        <svg class="scan" viewBox="0 0 120 120" fill="none">
+          <rect x="20" y="20" width="80" height="80" stroke="#cdd9ec" stroke-width="1.4"/>
+          <g class="spin" style="transform-origin:60px 60px"><line x1="60" y1="60" x2="60" y2="22" stroke="#1a4fa0" stroke-width="2"/></g>
+          <circle cx="60" cy="60" r="4" fill="#1a4fa0"/>
+        </svg>
+        <p class="lede">Loading…</p>
+      </div>
+
+      <!-- Sign in -->
+      <div id="stage-login" class="stage hidden">
+        <svg class="seal" viewBox="0 0 96 96" fill="none">
+          <g class="spin" stroke="#1a4fa0" stroke-width="1.3">
+            <circle cx="48" cy="48" r="44"/><circle cx="48" cy="48" r="34" stroke="#1e9e6a"/>
+            <path d="M48 6 v8 M48 82 v8 M6 48 h8 M82 48 h8 M18 18 l6 6 M72 72 l6 6 M78 18 l-6 6 M24 72 l-6 6" stroke="#cdd9ec"/>
+          </g>
+        </svg>
+        <div class="kicker">Graduate Scholars Portal</div>
+        <p class="lede">View your decision</p>
+        <p class="sub-text">Enter the email you applied with. We'll send you a secure sign-in link.</p>
+        <form id="login-form">
+          <input type="email" id="email" placeholder="you@example.com" autocomplete="email" required />
+          <button type="submit" id="login-btn">Send my sign-in link</button>
+        </form>
+        <p class="msg" id="login-msg"></p>
+      </div>
+
+      <!-- Check email -->
+      <div id="stage-sent" class="stage hidden">
+        <svg class="seal" viewBox="0 0 96 96" fill="none">
+          <g stroke="#1e9e6a" stroke-width="1.6" fill="none"><rect x="20" y="30" width="56" height="38"/><path d="M20 32 l28 22 l28 -22"/></g>
+        </svg>
+        <div class="kicker">Check your inbox</div>
+        <p class="lede">Your link is on the way</p>
+        <p class="sub-text">We've emailed a secure sign-in link to <strong id="sent-email"></strong>.<br/>Open it on this device to view your decision.</p>
+        <button class="ghost" onclick="location.reload()">Use a different email</button>
+      </div>
+
+      <!-- Locked (ready to reveal) -->
+      <div id="stage-locked" class="stage hidden">
+        <svg class="seal" viewBox="0 0 96 96" fill="none">
+          <g class="spin" stroke="#1a4fa0" stroke-width="1.3">
+            <circle cx="48" cy="48" r="44"/><circle cx="48" cy="48" r="34" stroke="#1e9e6a"/>
+            <path d="M48 6 v8 M48 82 v8 M6 48 h8 M82 48 h8 M18 18 l6 6 M72 72 l6 6 M78 18 l-6 6 M24 72 l-6 6" stroke="#cdd9ec"/>
+          </g>
+          <path d="M34 49 l9 9 l19 -21" stroke="#1e9e6a" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+        <div class="kicker">Decision Available</div>
+        <p class="lede">Your update is ready, <span id="locked-name">there</span>.</p>
+        <p class="sub-text">Your application to the Isomo Graduate Scholars Program has been reviewed.<br/>Take a breath — then open your decision.</p>
+        <button id="open-btn">View My Decision</button>
+      </div>
+
+      <!-- Suspense -->
+      <div id="stage-suspense" class="stage hidden">
+        <svg class="scan" viewBox="0 0 120 120" fill="none">
+          <rect x="20" y="20" width="80" height="80" stroke="#cdd9ec" stroke-width="1.4"/>
+          <g class="spin" style="transform-origin:60px 60px"><line x1="60" y1="60" x2="60" y2="22" stroke="#1a4fa0" stroke-width="2"/></g>
+          <circle cx="60" cy="60" r="4" fill="#1a4fa0"/>
+        </svg>
+        <div class="kicker">Opening</div>
+        <p class="lede">Retrieving your decision…</p>
+        <p class="dots" id="dots">•</p>
+      </div>
+
+      <!-- Result -->
+      <div id="stage-result" class="stage hidden"></div>
+
+      <!-- No decision / not found -->
+      <div id="stage-none" class="stage hidden">
+        <div class="kicker">No decision yet</div>
+        <p class="lede">Nothing to show — yet.</p>
+        <p class="sub-text" id="none-msg">There isn't a published decision for this account at the moment. If you applied with a different email address, sign out and try that one. Otherwise, please check back later.</p>
+        <button class="ghost" id="none-signout">Sign out</button>
+      </div>
+
+    </div></div>
+  </main>
+
+  <footer>
+    Isomo Graduate Scholars <span>·</span> Kigali, Rwanda <span>·</span> Broadening Access to Global Education
+    <br/>In partnership with the Government of Rwanda &amp; the Mastercard Foundation
+  </footer>
+
+<!-- config.js defines window.ISOMO_CONFIG (copy from config.example.js) -->
+<script src="config.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const cfg = window.ISOMO_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const stages = ["boot","login","sent","locked","suspense","result","none"];
+function show(name) { stages.forEach(s => $("stage-"+s).classList.toggle("hidden", s !== name)); }
+
+if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+  show("login");
+  $("login-msg").className = "msg err";
+  $("login-msg").textContent = "Portal not configured: copy config.example.js to config.js and add your Supabase URL + anon key.";
+  throw new Error("Missing ISOMO_CONFIG");
+}
+
+const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+  // implicit flow: the one-click email link is generated server-side and opened
+  // in a fresh browser, so there's no PKCE verifier to exchange — the session
+  // arrives in the URL and detectSessionInUrl picks it up.
+  auth: { persistSession: true, autoRefreshToken: true, flowType: "implicit", detectSessionInUrl: true },
+});
+
+let decision = null;   // the fetched row
+let booted = false;    // guard against duplicate boots
+
+// ---- auth ----
+$("login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const email = $("email").value.trim();
+  if (!email) return;
+  $("login-btn").disabled = true;
+  $("login-msg").className = "msg";
+  $("login-msg").textContent = "Sending…";
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: { emailRedirectTo: window.location.href.split("#")[0] },
+  });
+  $("login-btn").disabled = false;
+  if (error) {
+    $("login-msg").className = "msg err";
+    $("login-msg").textContent = error.message;
+    return;
+  }
+  $("sent-email").textContent = email;
+  show("sent");
+});
+
+$("signout").addEventListener("click", signOut);
+$("none-signout").addEventListener("click", signOut);
+async function signOut() { await supabase.auth.signOut(); location.reload(); }
+
+function initials(s) { return (s || "?").slice(0,2).toUpperCase(); }
+
+async function boot() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { booted = false; show("login"); return; }
+  if (booted) return;     // already loaded this session
+  booted = true;
+
+  // header identity
+  $("who-email").textContent = session.user.email;
+  $("who").style.visibility = "visible";
+
+  // fetch this user's published decision via the security-definer RPC
+  const { data, error } = await supabase.rpc("my_decision");
+  if (error) {
+    show("none");
+    $("none-msg").textContent = "We couldn't load your decision right now. Please try again shortly.";
+    return;
+  }
+  const row = Array.isArray(data) ? data[0] : data;
+  if (!row) { show("none"); return; }
+
+  decision = row;
+  $("locked-name").textContent = row.first_name || "there";
+  show("locked");
+}
+
+// react to the magic-link redirect completing (fires SIGNED_IN after the
+// URL token is detected); the explicit boot() below covers existing sessions.
+supabase.auth.onAuthStateChange((evt, session) => {
+  if (evt === "SIGNED_IN" && session) boot();
+});
+
+// ---- reveal ----
+$("open-btn").addEventListener("click", () => {
+  show("suspense");
+  const dots = $("dots"); let n = 1;
+  const tick = setInterval(() => { n = (n % 3) + 1; dots.textContent = "•".repeat(n); }, 320);
+  setTimeout(() => {
+    clearInterval(tick);
+    $("stage-result").innerHTML = resultHTML(decision);
+    wireActions();
+    show("result");
+    if (decision.status === "selected") celebrate();
+  }, 1900);
+});
+
+function infoGrid(d) {
+  return `
+    <div class="info">
+      <div><div class="lbl">Program</div><div class="val">Graduate Scholars</div></div>
+      <div><div class="lbl">Cohort</div><div class="val">${esc(d.cohort) || "2026 Cohort"}</div></div>
+      <div class="row2"><div class="lbl">Orientation</div><div class="val">${esc(d.orientation) || "To be announced"} · Fully funded — Mastercard Foundation</div></div>
+    </div>`;
+}
+
+function respondedNote(d) {
+  if (!d.response) return "";
+  return `<p class="responded">✓ You ${d.response === "accepted" ? "accepted your place" : "declined"} on ${new Date(d.responded_at).toLocaleDateString()}.</p>`;
+}
+
+function resultHTML(d) {
+  const name = esc(d.first_name) || "there";
+  if (d.status === "selected") {
+    const acted = !!d.response;
+    return `
+      <span class="status-tag tag-admit"><span class="sq"></span>Selected</span>
+      <h2 class="headline grad">Congratulations!</h2>
+      <p class="name-line">${name}, you're an Isomo Scholar.</p>
+      <p class="detail">You've been selected for the <strong>Isomo Graduate Scholars Program</strong> — and the journey to your international Master's or PhD starts here.</p>
+      ${infoGrid(d)}
+      <div class="rule"><span class="node"></span></div>
+      <div class="nextsteps"><h4>Your next steps</h4><ol>
+        <li>Accept your place before the deadline in your offer letter.</li>
+        <li>Join the ${esc(d.cohort) || "2026 Cohort"} Scholars orientation.</li>
+        <li>Meet your Isomo advisor to begin your graduate applications.</li>
+      </ol></div>
+      ${acted ? respondedNote(d) : `<div class="actions">
+        <button id="accept-btn">Accept My Place</button>
+        <button class="ghost" id="decline-btn">Decline</button>
+      </div>`}`;
+  }
+  if (d.status === "waitlisted") {
+    return `
+      <span class="status-tag tag-wait"><span class="sq"></span>Waitlisted</span>
+      <h2 class="headline" style="color:var(--isomo-blue)">Thank you, ${name}.</h2>
+      <p class="detail">Your application to the <strong>Isomo Graduate Scholars Program</strong> was strong, and you've been placed on our <strong>waitlist</strong> for the ${esc(d.cohort) || "2026 Cohort"}. We'll be in touch as places open up.</p>
+      ${infoGrid(d)}
+      <div class="rule"><span class="node"></span></div>
+      <div class="nextsteps"><h4>What happens now</h4><ol>
+        <li>Stay on the waitlist — no action is needed to remain considered.</li>
+        <li>Share any new achievements that strengthen your file.</li>
+        <li>We'll email you the moment there's news.</li>
+      </ol></div>`;
+  }
+  return `
+    <span class="status-tag tag-decline"><span class="sq"></span>Decision</span>
+    <h2 class="headline" style="color:var(--ink)">Thank you for applying, ${name}.</h2>
+    <p class="detail">After careful review, we're not able to offer you a place in the <strong>Isomo Graduate Scholars Program</strong> this cycle. This was a highly competitive round, and this decision doesn't define your potential.</p>
+    <div class="rule"><span class="node"></span></div>
+    <div class="nextsteps"><h4>We'd love to stay connected</h4><ol>
+      <li>You're warmly encouraged to reapply in the next cycle.</li>
+      <li>Join Isomo's community and information sessions.</li>
+      <li>Request feedback on your application from our team.</li>
+    </ol></div>`;
+}
+
+function wireActions() {
+  const a = $("accept-btn"), dn = $("decline-btn");
+  if (a) a.addEventListener("click", () => respond("accepted"));
+  if (dn) dn.addEventListener("click", () => respond("declined"));
+}
+
+async function respond(choice) {
+  const a = $("accept-btn"), dn = $("decline-btn");
+  if (a) a.disabled = true; if (dn) dn.disabled = true;
+  const { error } = await supabase.rpc("respond_to_decision", { p_choice: choice });
+  if (error) {
+    alert("Sorry, we couldn't record that: " + error.message);
+    if (a) a.disabled = false; if (dn) dn.disabled = false;
+    return;
+  }
+  decision.response = choice;
+  decision.responded_at = new Date().toISOString();
+  $("stage-result").innerHTML = resultHTML(decision);
+  wireActions();
+  if (choice === "accepted") celebrate();
+}
+
+function esc(s) { return s == null ? "" : String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+
+boot();
+
+/* ===== confetti — self-contained ===== */
+const canvas = $("confetti"), ctx = canvas.getContext("2d");
+let pieces = [], rafId = null;
+const COLORS = ["#1a4fa0","#1e9e6a","#f4b942","#ffffff","#7ec8e3"];
+function resize() { canvas.width = innerWidth; canvas.height = innerHeight; }
+addEventListener("resize", resize); resize();
+function celebrate() {
+  pieces = [];
+  for (let i = 0; i < 170; i++) pieces.push({ x: Math.random()*canvas.width, y: -20 - Math.random()*canvas.height*0.5, r: 5+Math.random()*7, c: COLORS[(i*7)%COLORS.length], vy: 2+Math.random()*3.5, vx: -1.5+Math.random()*3, rot: Math.random()*Math.PI, vr: -0.15+Math.random()*0.3, shape: i%3 });
+  if (!rafId) draw();
+  setTimeout(stopConfetti, 5200);
+}
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height); let alive = false;
+  for (const p of pieces) {
+    p.x += p.vx; p.y += p.vy; p.rot += p.vr; p.vy += 0.02;
+    if (p.y < canvas.height + 20) alive = true;
+    ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.rot); ctx.fillStyle = p.c;
+    if (p.shape === 0) ctx.fillRect(-p.r/2,-p.r/2,p.r,p.r);
+    else if (p.shape === 1) { ctx.beginPath(); ctx.arc(0,0,p.r/2,0,7); ctx.fill(); }
+    else ctx.fillRect(-p.r/2,-p.r/4,p.r,p.r/2);
+    ctx.restore();
+  }
+  if (alive) rafId = requestAnimationFrame(draw); else { rafId = null; ctx.clearRect(0,0,canvas.width,canvas.height); }
+}
+function stopConfetti() { pieces = []; if (rafId) { cancelAnimationFrame(rafId); rafId = null; } ctx.clearRect(0,0,canvas.width,canvas.height); }
+</script>
+</body>
+</html>

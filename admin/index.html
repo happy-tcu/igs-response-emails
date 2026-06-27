@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Isomo Graduate Scholars — Decisions Admin</title>
+<style>
+  :root {
+    --isomo-blue:#1a4fa0; --isomo-blue-dk:#123b7a; --isomo-green:#1e9e6a; --isomo-gold:#f4b942;
+    --ink:#14213a; --muted:#5a6a85; --line:#d9e2f0; --line-2:#c4d2e8; --paper:#eef3fa; --card:#fff;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; color:var(--ink); background:var(--paper); -webkit-font-smoothing:antialiased; }
+  header { display:flex; align-items:center; justify-content:space-between; padding:14px 24px; background:#fff; border-bottom:1px solid var(--line); position:sticky; top:0; z-index:5; }
+  .brand { font-weight:800; font-size:16px; color:var(--isomo-blue); letter-spacing:.3px; }
+  .brand span { color:var(--isomo-green); }
+  .brand small { display:block; font-weight:600; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--muted); }
+  .who { font-size:13px; color:var(--muted); display:flex; align-items:center; gap:12px; }
+  main { max-width:1180px; margin:0 auto; padding:24px; }
+
+  .card { background:#fff; border:1px solid var(--line); border-radius:4px; padding:18px 20px; margin-bottom:18px; }
+  h4 { margin:0 0 6px; font-size:14px; }
+  .muted { color:var(--muted); }
+  .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+
+  button { font:inherit; font-weight:700; font-size:14px; color:#fff; background:var(--isomo-blue); border:none; border-radius:3px; padding:11px 20px; cursor:pointer; }
+  button:hover:not(:disabled) { background:var(--isomo-blue-dk); }
+  button:disabled { opacity:.55; cursor:default; }
+  button.ghost { background:#fff; color:var(--isomo-blue); border:1.5px solid var(--line-2); }
+  button.ghost:hover:not(:disabled) { background:var(--paper); }
+  button.link { background:none; color:var(--muted); border:none; text-decoration:underline; padding:0; font-size:12px; font-weight:600; }
+
+  input, select { font:inherit; font-size:14px; padding:9px 11px; border:1.5px solid var(--line-2); border-radius:3px; color:var(--ink); background:#fff; }
+  input:focus, select:focus { outline:none; border-color:var(--isomo-blue); }
+  label.k { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); display:block; margin-bottom:4px; }
+
+  table { width:100%; border-collapse:collapse; font-size:13px; }
+  th, td { text-align:left; padding:9px 10px; border-bottom:1px solid var(--line); }
+  th { font-size:10px; letter-spacing:1px; text-transform:uppercase; color:var(--muted); }
+  td.num { font-variant-numeric:tabular-nums; }
+  tr:hover td { background:#fafcff; }
+
+  .pill { display:inline-block; font-size:11px; font-weight:700; padding:3px 9px; border-radius:2px; border:1px solid var(--line-2); color:var(--muted); }
+  .pill.fill { background:var(--isomo-blue); color:#fff; border-color:var(--isomo-blue); }
+  .pill.green { background:rgba(30,158,106,.1); color:var(--isomo-green); border-color:rgba(30,158,106,.4); }
+  .pill.gold { background:rgba(244,185,66,.12); color:#b9852a; border-color:rgba(244,185,66,.5); }
+
+  .notice { padding:11px 14px; border:1.5px solid var(--ink); border-radius:3px; margin-top:12px; font-size:13px; }
+  .notice.err { border-color:#b3261e; color:#b3261e; }
+
+  .center { max-width:420px; margin:12vh auto; text-align:center; background:#fff; border:1px solid var(--line); border-radius:6px; padding:40px 32px; }
+  .hidden { display:none; }
+  .seal { width:64px; height:64px; margin:0 auto 18px; display:block; }
+  .summary .pill { margin:0 6px 6px 0; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="brand">Isom<span>o</span> Graduate Scholars<small>Decisions Admin</small></div>
+    <div class="who" id="who" style="visibility:hidden">
+      <span id="who-email"></span>
+      <button class="link" id="signout">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Sign in -->
+  <div id="view-login" class="center hidden">
+    <svg class="seal" viewBox="0 0 96 96" fill="none">
+      <g stroke="#1a4fa0" stroke-width="1.4"><circle cx="48" cy="48" r="42"/><circle cx="48" cy="48" r="32" stroke="#1e9e6a"/></g>
+    </svg>
+    <h3 style="margin:0 0 6px">Admissions admin</h3>
+    <p class="muted" style="font-size:14px; margin:0 0 22px">Sign in with your Isomo committee account to set and release decisions.</p>
+    <button id="google-btn" style="width:100%">Sign in with Google</button>
+    <p class="muted" id="login-msg" style="font-size:12px; margin-top:14px"></p>
+  </div>
+
+  <!-- Not authorized -->
+  <div id="view-denied" class="center hidden">
+    <h3 style="margin:0 0 6px">Not authorized</h3>
+    <p class="muted" id="denied-msg" style="font-size:14px"></p>
+    <button class="ghost" id="denied-signout" style="margin-top:16px">Sign out</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="view-loading" class="center"><p class="muted">Loading…</p></div>
+
+  <!-- Main console -->
+  <main id="view-console" class="hidden">
+    <div class="card">
+      <h4>Release decisions</h4>
+      <p class="muted" style="font-size:12px; margin:0 0 12px">
+        Set each applicant's outcome, then <strong>publish</strong> (makes it visible in the
+        portal) and <strong>notify</strong> (emails a one-click link). Publish and notify only
+        affect candidates with a status set.
+      </p>
+      <div class="row">
+        <div>
+          <label class="k">Orientation</label>
+          <input id="orientation" value="July 2026" style="max-width:150px" />
+        </div>
+        <button class="ghost" id="seed-btn">Suggest from votes</button>
+        <button id="publish-btn">Publish decided</button>
+        <button id="notify-btn">Notify applicants</button>
+        <button class="ghost" id="refresh-btn">Refresh</button>
+      </div>
+      <div id="action-note"></div>
+    </div>
+
+    <div class="card summary">
+      <h4>Where things stand</h4>
+      <div id="summary"></div>
+    </div>
+
+    <div class="card">
+      <div class="row" style="margin-bottom:12px">
+        <input id="search" placeholder="Search name or email…" style="flex:1; min-width:220px" />
+        <select id="filter" style="max-width:220px">
+          <option value="all">All</option>
+          <option value="undecided">Undecided</option>
+          <option value="selected">Selected</option>
+          <option value="waitlisted">Waitlisted</option>
+          <option value="not_selected">Not selected</option>
+        </select>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Candidate</th>
+            <th style="width:55px">Avg</th>
+            <th style="width:120px" title="yes / strong-maybe / maybe / no">Votes (Y/SM/M/N)</th>
+            <th style="width:150px">Decision</th>
+            <th style="width:120px">Portal</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+      <p class="muted" id="empty-msg" style="font-size:13px; margin-top:10px"></p>
+    </div>
+
+    <p class="muted" style="font-size:11px">
+      Applicants see their decision only after it's published. The notification email never
+      reveals the outcome. Each link is generated for one applicant's email and is single-use.
+    </p>
+  </main>
+
+<script src="config.js"></script>
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+
+const cfg = window.ISOMO_CONFIG || {};
+const $ = (id) => document.getElementById(id);
+const views = ["login","denied","loading","console"];
+function show(v) { views.forEach(x => $("view-"+x).classList.toggle("hidden", x !== v)); }
+
+if (!cfg.SUPABASE_URL || !cfg.SUPABASE_ANON_KEY) {
+  show("login");
+  $("login-msg").textContent = "Not configured: copy config.example.js to config.js and add your Supabase URL + anon key.";
+  throw new Error("missing config");
+}
+
+const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
+  auth: { persistSession: true, autoRefreshToken: true, flowType: "implicit", detectSessionInUrl: true },
+});
+
+const STATUS_LABEL = { selected: "Selected", waitlisted: "Waitlisted", not_selected: "Not selected" };
+let rows = [];
+let started = false;
+
+// ── auth ──────────────────────────────────────────────────────────
+$("google-btn").addEventListener("click", async () => {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: { redirectTo: window.location.href.split("#")[0] },
+  });
+  if (error) $("login-msg").textContent = error.message;
+});
+$("signout").addEventListener("click", signOut);
+$("denied-signout").addEventListener("click", signOut);
+async function signOut() { await supabase.auth.signOut(); location.reload(); }
+
+async function start() {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { show("login"); return; }
+  if (started) return;
+  started = true;
+
+  $("who-email").textContent = session.user.email;
+  $("who").style.visibility = "visible";
+
+  // must be an admin reviewer
+  const { data: rev } = await supabase.from("reviewers").select("role").eq("email", session.user.email).maybeSingle();
+  if (!rev || rev.role !== "admin") {
+    $("denied-msg").innerHTML = `<code>${session.user.email}</code> is not an Isomo admissions admin. Ask an existing admin to grant access.`;
+    show("denied");
+    return;
+  }
+  show("console");
+  await load();
+}
+
+supabase.auth.onAuthStateChange((evt, session) => { if (evt === "SIGNED_IN" && session) start(); });
+
+// ── data ──────────────────────────────────────────────────────────
+async function load() {
+  const { data, error } = await supabase.from("v_decision_worklist").select("*");
+  if (error) { note(error.message, true); return; }
+  rows = (data || []).sort((a, b) => (b.avg_score ?? -1) - (a.avg_score ?? -1));
+  render();
+}
+
+// ── actions ───────────────────────────────────────────────────────
+async function setStatus(id, status) {
+  if (status === "") {
+    const { error } = await supabase.from("decisions").delete().eq("candidate_id", id);
+    if (error) return note(error.message, true);
+  } else {
+    const { error } = await supabase.from("decisions").upsert(
+      { candidate_id: id, status, orientation: $("orientation").value, decided_by: (await supabase.auth.getUser()).data.user.email },
+      { onConflict: "candidate_id" });
+    if (error) return note(error.message, true);
+  }
+  const r = rows.find(x => x.candidate_id === id);
+  if (r) r.status = status === "" ? null : status;
+  render();
+}
+
+$("seed-btn").addEventListener("click", async () => {
+  if (!confirm("Suggest a starting decision for every voted-on candidate, from the committee's votes? This never overwrites a decision you've already set.")) return;
+  await withBusy("seed-btn", async () => {
+    const { data, error } = await supabase.rpc("seed_decisions_from_ballots", { p_orientation: $("orientation").value });
+    if (error) return note(error.message, true);
+    note(`Seeded ${data} new decision(s) from votes. Review and adjust, then publish.`);
+    await load();
+  });
+});
+
+$("publish-btn").addEventListener("click", async () => {
+  const undecided = rows.filter(r => !r.status).length;
+  if (!confirm(`Publish all decisions that have a status set?\n\nThis makes them visible to applicants. ${undecided} candidate(s) without a status are skipped.`)) return;
+  await withBusy("publish-btn", async () => {
+    const { data, error } = await supabase.rpc("publish_decisions");
+    if (error) return note(error.message, true);
+    note(`${data} decision(s) are now live in the portal.`);
+    await load();
+  });
+});
+
+$("notify-btn").addEventListener("click", async () => {
+  if (!confirm("Email every published applicant a one-click link to view their decision? Already-notified applicants are skipped.")) return;
+  await withBusy("notify-btn", async () => {
+    const { data, error } = await supabase.functions.invoke("notify-decisions", { body: { resend: false } });
+    if (error) return note(error.message, true);
+    if (data?.error) return note(data.error + (data.duplicates ? ` — duplicates: ${data.duplicates.join(", ")}` : ""), true);
+    note(`Sent ${data?.sent ?? 0} email(s).${data?.failed ? " " + data.failed + " failed." : ""}${data?.blanks_skipped ? " " + data.blanks_skipped + " skipped (blank email)." : ""}`);
+    await load();
+  });
+});
+
+$("refresh-btn").addEventListener("click", load);
+$("search").addEventListener("input", render);
+$("filter").addEventListener("change", render);
+
+async function withBusy(id, fn) {
+  const ids = ["seed-btn","publish-btn","notify-btn","refresh-btn"];
+  ids.forEach(i => $(i).disabled = true);
+  const label = $(id).textContent; $(id).textContent = "Working…";
+  try { await fn(); } finally { ids.forEach(i => $(i).disabled = false); $(id).textContent = label; }
+}
+
+function note(msg, isErr) {
+  $("action-note").innerHTML = `<div class="notice ${isErr ? "err" : ""}">${isErr ? "<strong>Error:</strong> " : ""}${esc(msg)}</div>`;
+}
+
+// ── render ────────────────────────────────────────────────────────
+function render() {
+  const c = { selected:0, waitlisted:0, not_selected:0, undecided:0, published:0, notified:0, viewed:0, accepted:0, declined:0 };
+  for (const r of rows) {
+    if (r.status) c[r.status]++; else c.undecided++;
+    if (r.published) c.published++;
+    if (r.notified_at) c.notified++;
+    if (r.viewed_at) c.viewed++;
+    if (r.response === "accepted") c.accepted++;
+    if (r.response === "declined") c.declined++;
+  }
+  $("summary").innerHTML =
+    `<span class="pill fill">${c.selected} selected</span>` +
+    `<span class="pill gold">${c.waitlisted} waitlisted</span>` +
+    `<span class="pill">${c.not_selected} not selected</span>` +
+    `<span class="pill">${c.undecided} undecided</span>` +
+    `<span class="pill">${c.published} published</span>` +
+    `<span class="pill">${c.notified} notified</span>` +
+    `<span class="pill">${c.viewed} viewed</span>` +
+    `<span class="pill green">${c.accepted} accepted</span>` +
+    `<span class="pill">${c.declined} declined</span>`;
+
+  const needle = $("search").value.trim().toLowerCase();
+  const filter = $("filter").value;
+  const visible = rows.filter(r => {
+    if (filter === "undecided" && r.status) return false;
+    if (filter !== "all" && filter !== "undecided" && r.status !== filter) return false;
+    if (!needle) return true;
+    return `${r.first_name ?? ""} ${r.last_name ?? ""} ${r.email ?? ""}`.toLowerCase().includes(needle);
+  });
+
+  $("rows").innerHTML = visible.map(r => `
+    <tr>
+      <td>${esc((r.last_name||"").toUpperCase())}, ${esc(r.first_name||"")}
+        <div class="muted" style="font-size:11px">${esc(r.email || "— no email —")}</div></td>
+      <td class="num">${r.avg_score ?? "—"}</td>
+      <td class="num" style="font-size:12px">${r.yes_votes}/${r.strong_maybe_votes}/${r.maybe_votes}/${r.no_votes}</td>
+      <td>
+        <select data-id="${r.candidate_id}" class="status-sel">
+          <option value="">— set —</option>
+          <option value="selected"${r.status==="selected"?" selected":""}>${STATUS_LABEL.selected}</option>
+          <option value="waitlisted"${r.status==="waitlisted"?" selected":""}>${STATUS_LABEL.waitlisted}</option>
+          <option value="not_selected"${r.status==="not_selected"?" selected":""}>${STATUS_LABEL.not_selected}</option>
+        </select>
+      </td>
+      <td style="font-size:11px">
+        ${r.published ? '<span class="pill fill">LIVE</span>' : '<span class="muted">draft</span>'}
+        ${r.response ? `<div style="margin-top:3px">${r.response === "accepted" ? "✓ accepted" : "✗ declined"}</div>` : (r.viewed_at ? '<div class="muted" style="margin-top:3px">viewed</div>' : "")}
+      </td>
+    </tr>`).join("");
+
+  $("empty-msg").textContent = visible.length ? "" : "No candidates match.";
+  document.querySelectorAll(".status-sel").forEach(sel =>
+    sel.addEventListener("change", (e) => setStatus(e.target.dataset.id, e.target.value)));
+}
+
+function esc(s) { return s == null ? "" : String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch])); }
+
+start();
+</script>
+</body>
+</html>
