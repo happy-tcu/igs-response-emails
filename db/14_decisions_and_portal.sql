@@ -166,7 +166,7 @@ with (security_invoker = true) as
     count(b.*) filter (where b.decision = 'strong_maybe') as strong_maybe_votes,
     count(b.*) filter (where b.decision = 'maybe')        as maybe_votes,
     count(b.*) filter (where b.decision = 'no')           as no_votes,
-    coalesce(c.admin_avg_override, round(avg(b.score), 1)) as avg_score,
+    round(avg(b.score), 1)                                as avg_score,
     d.status,
     d.published,
     d.notified_at,
