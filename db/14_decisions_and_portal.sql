@@ -5,19 +5,11 @@
 -- Run this in the Supabase SQL editor (Project → SQL → New query), AFTER the
 -- earlier numbered migrations. Safe to re-run (idempotent).
 
--- ── helper: is the current user an admin reviewer? ──────────────────────
--- security definer so it can read `reviewers` without tripping its own RLS.
-create or replace function is_admin() returns boolean
-language sql stable
-security definer
-set search_path = public
-as $$
-  select exists (
-    select 1 from reviewers
-    where email = (auth.jwt() ->> 'email')
-      and role  = 'admin'
-  );
-$$;
+-- This migration is purely ADDITIVE. It relies on two helpers already defined
+-- by the grading platform's earlier migrations and does NOT redefine them:
+--   • is_reviewer()  (schema.sql)         — caller is a whitelisted reviewer
+--   • is_admin()     (06_admin_policies)  — caller is an admin reviewer
+-- Both are security-definer lookups against `reviewers`.
 
 -- ── decisions — one per candidate, the applicant-facing outcome ─────────
 create table if not exists decisions (
