@@ -182,52 +182,6 @@ with (security_invoker = true) as
 -- tables' RLS mean non-reviewers still see zero rows.
 grant select on v_decision_worklist to authenticated;
 
--- Bootstrap decision rows from the committee's votes. This only SUGGESTS a
--- starting status (unpublished) and NEVER overwrites an existing decision
--- (on conflict do nothing), so human edits always win. Admins review/adjust,
--- then publish. The rule below is a sensible default — change it to match
--- Isomo's actual selection policy.
-create or replace function seed_decisions_from_ballots(p_orientation text default 'July 2026')
-returns integer
-language plpgsql
-security definer
-set search_path = public
-as $$
-declare
-  n integer;
-begin
-  if not is_admin() then
-    raise exception 'admin only';
-  end if;
-
-  with tally as (
-    select c.id,
-           count(b.*) filter (where b.decision = 'yes')          as yc,
-           count(b.*) filter (where b.decision = 'strong_maybe') as sm,
-           count(b.*) filter (where b.decision = 'maybe')        as mc,
-           count(b.*) filter (where b.decision = 'no')           as nc
-      from candidates c
-      left join ballots b on b.candidate_id = c.id
-     group by c.id
-  )
-  insert into decisions (candidate_id, status, orientation, decided_by)
-  select id,
-         case
-           when (yc + sm) > (mc + nc) then 'selected'
-           when nc > (yc + sm)        then 'not_selected'
-           else 'waitlisted'
-         end,
-         p_orientation,
-         auth.jwt() ->> 'email'
-    from tally
-   where (yc + sm + mc + nc) > 0   -- only candidates who were actually voted on
-  on conflict (candidate_id) do nothing;
-
-  get diagnostics n = row_count;
-  return n;
-end;
-$$;
-
 -- Publish every decision that has a status set but isn't live yet.
 create or replace function publish_decisions()
 returns integer
@@ -253,5 +207,4 @@ begin
 end;
 $$;
 
-grant execute on function seed_decisions_from_ballots(text) to authenticated;
 grant execute on function publish_decisions()               to authenticated;

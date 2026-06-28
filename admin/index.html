@@ -98,7 +98,6 @@
           <label class="k">Orientation</label>
           <input id="orientation" value="July 2026" style="max-width:150px" />
         </div>
-        <button class="ghost" id="seed-btn">Suggest from votes</button>
         <button id="publish-btn">Publish decided</button>
         <button id="notify-btn">Notify applicants</button>
         <button class="ghost" id="refresh-btn">Refresh</button>
@@ -224,16 +223,6 @@ async function setStatus(id, status) {
   render();
 }
 
-$("seed-btn").addEventListener("click", async () => {
-  if (!confirm("Suggest a starting decision for every voted-on candidate, from the committee's votes? This never overwrites a decision you've already set.")) return;
-  await withBusy("seed-btn", async () => {
-    const { data, error } = await supabase.rpc("seed_decisions_from_ballots", { p_orientation: $("orientation").value });
-    if (error) return note(error.message, true);
-    note(`Seeded ${data} new decision(s) from votes. Review and adjust, then publish.`);
-    await load();
-  });
-});
-
 $("publish-btn").addEventListener("click", async () => {
   const undecided = rows.filter(r => !r.status).length;
   if (!confirm(`Publish all decisions that have a status set?\n\nThis makes them visible to applicants. ${undecided} candidate(s) without a status are skipped.`)) return;
@@ -261,7 +250,7 @@ $("search").addEventListener("input", render);
 $("filter").addEventListener("change", render);
 
 async function withBusy(id, fn) {
-  const ids = ["seed-btn","publish-btn","notify-btn","refresh-btn"];
+  const ids = ["publish-btn","notify-btn","refresh-btn"];
   ids.forEach(i => $(i).disabled = true);
   const label = $(id).textContent; $(id).textContent = "Working…";
   try { await fn(); } finally { ids.forEach(i => $(i).disabled = false); $(id).textContent = label; }
