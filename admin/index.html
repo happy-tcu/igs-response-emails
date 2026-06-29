@@ -87,19 +87,19 @@
   <!-- Main console -->
   <main id="view-console" class="hidden">
     <div class="card">
-      <h4>Release decisions</h4>
-      <p class="muted" style="font-size:12px; margin:0 0 12px">
+      <h4 id="release-title">Release decisions</h4>
+      <p class="muted" id="release-intro" style="font-size:12px; margin:0 0 12px">
         Set each applicant's outcome, then <strong>publish</strong> (makes it visible in the
         portal) and <strong>notify</strong> (emails a one-click link). Publish and notify only
         affect candidates with a status set.
       </p>
       <div class="row">
-        <div>
+        <div class="admin-only">
           <label class="k">Orientation</label>
           <input id="orientation" value="July 2026" style="max-width:150px" />
         </div>
-        <button id="publish-btn">Publish decided</button>
-        <button id="notify-btn">Notify applicants</button>
+        <button id="publish-btn" class="admin-only">Publish decided</button>
+        <button id="notify-btn" class="admin-only">Notify applicants</button>
         <button class="ghost" id="refresh-btn">Refresh</button>
       </div>
       <div id="action-note"></div>
@@ -164,6 +164,7 @@ const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
 const STATUS_LABEL = { selected: "Selected", waitlisted: "Waitlisted", not_selected: "Not selected" };
 let rows = [];
 let started = false;
+let isAdmin = false;   // admins can set/publish/notify; reviewers are view-only
 
 // ── auth ──────────────────────────────────────────────────────────
 $("google-btn").addEventListener("click", async () => {
@@ -186,15 +187,26 @@ async function start() {
   $("who-email").textContent = session.user.email;
   $("who").style.visibility = "visible";
 
-  // must be an admin reviewer
+  // any whitelisted reviewer can VIEW; only admins can act
   const { data: rev } = await supabase.from("reviewers").select("role").eq("email", session.user.email).maybeSingle();
-  if (!rev || rev.role !== "admin") {
-    $("denied-msg").innerHTML = `<code>${session.user.email}</code> is not an Isomo admissions admin. Ask an existing admin to grant access.`;
+  if (!rev) {
+    $("denied-msg").innerHTML = `<code>${esc(session.user.email)}</code> is not on the Isomo reviewer list. Ask an admin for access.`;
     show("denied");
     return;
   }
+  isAdmin = rev.role === "admin";
+  applyRoleVisibility();
   show("console");
   await load();
+}
+
+// hide the action controls for non-admin (view-only) reviewers
+function applyRoleVisibility() {
+  document.querySelectorAll(".admin-only").forEach(el => { el.style.display = isAdmin ? "" : "none"; });
+  if (!isAdmin) {
+    $("release-title").textContent = "Decision status";
+    $("release-intro").textContent = "View only — decision releases are managed by admissions admins.";
+  }
 }
 
 supabase.auth.onAuthStateChange((evt, session) => { if (evt === "SIGNED_IN" && session) start(); });
@@ -298,12 +310,12 @@ function render() {
       <td class="num">${r.avg_score ?? "—"}</td>
       <td class="num" style="font-size:12px">${r.yes_votes}/${r.strong_maybe_votes}/${r.maybe_votes}/${r.no_votes}</td>
       <td>
-        <select data-id="${r.candidate_id}" class="status-sel">
+        ${isAdmin ? `<select data-id="${r.candidate_id}" class="status-sel">
           <option value="">— set —</option>
           <option value="selected"${r.status==="selected"?" selected":""}>${STATUS_LABEL.selected}</option>
           <option value="waitlisted"${r.status==="waitlisted"?" selected":""}>${STATUS_LABEL.waitlisted}</option>
           <option value="not_selected"${r.status==="not_selected"?" selected":""}>${STATUS_LABEL.not_selected}</option>
-        </select>
+        </select>` : `<span>${r.status ? STATUS_LABEL[r.status] : "—"}</span>`}
       </td>
       <td style="font-size:11px">
         ${r.published ? '<span class="pill fill">LIVE</span>' : '<span class="muted">draft</span>'}
