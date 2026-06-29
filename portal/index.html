@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Isomo Graduate Scholars — Your Decision</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important}h1,h2,h3,h4,.headline,.lede,.brand .name,.brand{font-family:"Montserrat","Open Sans",sans-serif!important;letter-spacing:.2px}
@@ -26,7 +27,8 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
     padding: 18px 28px; background: rgba(255,255,255,.82); backdrop-filter: blur(6px); border-bottom: 1px solid var(--line);
   }
   .brand { display: flex; align-items: center; gap: 12px; }
-  .brand .mark { width: 34px; height: 34px; flex: none; }
+  .brand .mark { height: 30px; width: auto; flex: none; }
+  .brand .divider { width: 1px; height: 28px; background: var(--line-2); margin: 0 2px; flex: none; }
   .brand .name { font-weight: 800; font-size: 18px; letter-spacing: .3px; color: var(--isomo-blue); }
   .brand .name span { color: var(--isomo-green); }
   .brand .sub { font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 1px; }
@@ -137,10 +139,8 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 
   <header>
     <div class="brand">
-      <svg class="mark" viewBox="0 0 40 40" fill="none">
-        <rect x="3" y="3" width="34" height="34" stroke="#4a4b4c" stroke-width="2"/>
-        <path d="M11 29 V15 L20 22 L29 15 V29" stroke="#8cc63e" stroke-width="2.4" fill="none" stroke-linejoin="round"/>
-      </svg>
+      <img class="mark" src="b2r-logo.png" alt="Bridge2Rwanda" />
+      <span class="divider"></span>
       <div><div class="name">Isom<span>o</span></div><div class="sub">Graduate Scholars</div></div>
     </div>
     <div class="who" id="who" style="visibility:hidden">
