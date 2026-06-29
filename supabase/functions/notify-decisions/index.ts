@@ -26,18 +26,19 @@ function json(status: number, body: unknown) {
 
 function emailHtml(firstName: string, link: string): string {
   return `
-<div style="font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;color:#14213a">
-  <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#5a6a85">Isomo Graduate Scholars</p>
-  <h2 style="color:#1a4fa0;margin:4px 0 16px">Your decision is ready, ${firstName}</h2>
+<div style="font-family:'Open Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;color:#4a4b4c">
+  <img src="https://igs-response-emails.vercel.app/portal/b2r-logo.png" alt="Bridge2Rwanda" height="32" style="height:32px;width:auto;margin-bottom:18px"/>
+  <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7a7c7e;margin:0">Isomo Graduate Scholars</p>
+  <h2 style="color:#4a4b4c;margin:4px 0 16px">Your decision is ready, ${firstName}</h2>
   <p style="font-size:15px;line-height:1.6">Thank you for applying to the Isomo Graduate Scholars Program.
   Your selection decision is now available — click below to view it.</p>
   <p style="margin:24px 0">
-    <a href="${link}" style="background:#1a4fa0;color:#fff;text-decoration:none;font-weight:700;padding:13px 26px;border-radius:3px;display:inline-block">View my decision</a>
+    <a href="${link}" style="background:#4a4b4c;color:#fff;text-decoration:none;font-weight:700;padding:13px 26px;border-radius:3px;display:inline-block">View my decision</a>
   </p>
-  <p style="font-size:13px;color:#5a6a85;line-height:1.6">This link is personal to you and can only be used once — please don't share or forward it.</p>
-  <hr style="border:none;border-top:1px solid #d9e2f0;margin:24px 0"/>
-  <p style="font-size:12px;color:#8a97ac">Isomo Graduate Scholars · Kigali, Rwanda · Broadening Access to Global Education<br/>
-  In partnership with the Government of Rwanda &amp; the Mastercard Foundation</p>
+  <p style="font-size:13px;color:#7a7c7e;line-height:1.6">This link is personal to you and can only be used once — please don't share or forward it.</p>
+  <hr style="border:none;border-top:1px solid #e3e5e1;margin:24px 0"/>
+  <p style="font-size:12px;color:#9aa09a">Isomo Graduate Scholars · Kigali, Rwanda · Broadening Access to Global Education<br/>
+  A Bridge2Rwanda program, in partnership with the Government of Rwanda &amp; the Mastercard Foundation</p>
 </div>`;
 }
 
