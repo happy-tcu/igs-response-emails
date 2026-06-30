@@ -58,6 +58,11 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
   .hidden { display:none; }
   .seal { width:64px; height:64px; margin:0 auto 18px; display:block; }
   .summary .pill { margin:0 6px 6px 0; }
+  .tabs { display:flex; gap:2px; margin-bottom:18px; border-bottom:1px solid var(--line); }
+  .tab { background:none; color:var(--muted); border:none; border-bottom:2px solid transparent; border-radius:0; padding:10px 18px; font-weight:700; font-size:14px; cursor:pointer; }
+  .tab:hover:not(:disabled) { background:none; color:var(--ink); }
+  .tab.active { color:var(--ink); border-bottom-color:var(--isomo-green); }
+  .panel.hidden { display:none; }
 </style>
 </head>
 <body>
@@ -96,59 +101,93 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 
   <!-- Main console -->
   <main id="view-console" class="hidden">
-    <div class="card">
-      <h4 id="release-title">Release decisions</h4>
-      <p class="muted" id="release-intro" style="font-size:12px; margin:0 0 12px">
-        Set each applicant's outcome, then <strong>publish</strong> (makes it visible in the
-        portal) and <strong>notify</strong> (emails a one-click link). Publish and notify only
-        affect candidates with a status set.
-      </p>
-      <div class="row">
-        <div class="admin-only">
-          <label class="k">Orientation</label>
-          <input id="orientation" value="July 2026" style="max-width:150px" />
+    <nav class="tabs">
+      <button class="tab active" data-tab="decisions">Decisions</button>
+      <button class="tab" data-tab="responses">Responses</button>
+    </nav>
+
+    <!-- ===================== DECISIONS ===================== -->
+    <section id="panel-decisions" class="panel">
+      <div class="card">
+        <h4 id="release-title">Release decisions</h4>
+        <p class="muted" id="release-intro" style="font-size:12px; margin:0 0 12px">
+          Set each applicant's outcome, then <strong>publish</strong> (makes it visible in the
+          portal) and <strong>notify</strong> (emails a one-click link). Publish and notify only
+          affect candidates with a status set.
+        </p>
+        <div class="row">
+          <div class="admin-only">
+            <label class="k">Orientation</label>
+            <input id="orientation" value="July 2026" style="max-width:150px" />
+          </div>
+          <button id="publish-btn" class="admin-only">Publish decided</button>
+          <button id="notify-btn" class="admin-only">Notify applicants</button>
+          <button class="ghost" id="refresh-btn">Refresh</button>
         </div>
-        <button id="publish-btn" class="admin-only">Publish decided</button>
-        <button id="notify-btn" class="admin-only">Notify applicants</button>
-        <button class="ghost" id="refresh-btn">Refresh</button>
+        <div id="action-note"></div>
       </div>
-      <div id="action-note"></div>
-    </div>
 
-    <div class="card summary">
-      <h4>Where things stand</h4>
-      <div id="summary"></div>
-    </div>
-
-    <div class="card">
-      <div class="row" style="margin-bottom:12px">
-        <input id="search" placeholder="Search name or email…" style="flex:1; min-width:220px" />
-        <select id="filter" style="max-width:220px">
-          <option value="all">All</option>
-          <option value="undecided">Undecided</option>
-          <option value="selected">Selected</option>
-          <option value="waitlisted">Waitlisted</option>
-          <option value="not_selected">Not selected</option>
-        </select>
-        <button class="ghost" id="export-btn">Export CSV</button>
+      <div class="card summary">
+        <h4>Where things stand</h4>
+        <div id="summary"></div>
       </div>
-      <table>
-        <thead>
-          <tr>
+
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <input id="search" placeholder="Search name or email…" style="flex:1; min-width:220px" />
+          <select id="filter" style="max-width:220px">
+            <option value="all">All</option>
+            <option value="undecided">Undecided</option>
+            <option value="selected">Selected</option>
+            <option value="waitlisted">Waitlisted</option>
+            <option value="not_selected">Not selected</option>
+          </select>
+        </div>
+        <table>
+          <thead><tr><th>Candidate</th><th style="width:150px">Decision</th><th style="width:120px">Portal</th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+        <p class="muted" id="empty-msg" style="font-size:13px; margin-top:10px"></p>
+      </div>
+
+      <p class="muted" style="font-size:11px">
+        Applicants see their decision only after it's published. The notification email never
+        reveals the outcome. Each link is generated for one applicant's email and is single-use.
+      </p>
+    </section>
+
+    <!-- ===================== RESPONSES ===================== -->
+    <section id="panel-responses" class="panel hidden">
+      <div class="card summary">
+        <h4>Responses</h4>
+        <p class="muted" style="font-size:12px; margin:0 0 10px">Who has viewed their decision and accepted or declined. Only published decisions appear here.</p>
+        <div id="resp-summary"></div>
+      </div>
+      <div class="card">
+        <div class="row" style="margin-bottom:12px">
+          <input id="resp-search" placeholder="Search name or email…" style="flex:1; min-width:220px" />
+          <select id="resp-filter" style="max-width:220px">
+            <option value="all">All published</option>
+            <option value="accepted">Accepted</option>
+            <option value="declined">Declined</option>
+            <option value="awaiting">Awaiting response</option>
+            <option value="notviewed">Not yet viewed</option>
+          </select>
+          <button class="ghost" id="export-btn">Export CSV</button>
+        </div>
+        <table>
+          <thead><tr>
             <th>Candidate</th>
-            <th style="width:150px">Decision</th>
-            <th style="width:120px">Portal</th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-      <p class="muted" id="empty-msg" style="font-size:13px; margin-top:10px"></p>
-    </div>
-
-    <p class="muted" style="font-size:11px">
-      Applicants see their decision only after it's published. The notification email never
-      reveals the outcome. Each link is generated for one applicant's email and is single-use.
-    </p>
+            <th style="width:110px">Decision</th>
+            <th style="width:80px">Notified</th>
+            <th style="width:80px">Viewed</th>
+            <th style="width:160px">Response</th>
+          </tr></thead>
+          <tbody id="resp-rows"></tbody>
+        </table>
+        <p class="muted" id="resp-empty" style="font-size:13px; margin-top:10px"></p>
+      </div>
+    </section>
   </main>
 
 <script src="config.js"></script>
@@ -174,7 +213,15 @@ const STATUS_LABEL = { selected: "Selected", waitlisted: "Waitlisted", not_selec
 let rows = [];
 let started = false;
 let isAdmin = false;   // admins can set/publish/notify; reviewers are view-only
-let visibleRows = [];  // current filtered worklist, for Export CSV
+let visibleRows = [];  // current filtered worklist
+let visibleResp = [];  // current filtered responses, for Export CSV
+
+// tab switching
+document.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+  document.querySelectorAll(".tab").forEach(x => x.classList.toggle("active", x === t));
+  $("panel-decisions").classList.toggle("hidden", t.dataset.tab !== "decisions");
+  $("panel-responses").classList.toggle("hidden", t.dataset.tab !== "responses");
+}));
 
 // ── auth ──────────────────────────────────────────────────────────
 $("google-btn").addEventListener("click", async () => {
@@ -270,6 +317,8 @@ $("notify-btn").addEventListener("click", async () => {
 $("refresh-btn").addEventListener("click", load);
 $("search").addEventListener("input", render);
 $("filter").addEventListener("change", render);
+$("resp-search").addEventListener("input", renderResponses);
+$("resp-filter").addEventListener("change", renderResponses);
 
 async function withBusy(id, fn) {
   const ids = ["publish-btn","notify-btn","refresh-btn"];
@@ -335,6 +384,51 @@ function render() {
   $("empty-msg").textContent = visible.length ? "" : "No candidates match.";
   document.querySelectorAll(".status-sel").forEach(sel =>
     sel.addEventListener("change", (e) => setStatus(e.target.dataset.id, e.target.value)));
+
+  renderResponses();
+}
+
+// ── Responses tab ─────────────────────────────────────────────────
+function renderResponses() {
+  const pub = rows.filter(r => r.published);
+  const c = { accepted: 0, declined: 0, awaiting: 0, viewed: 0 };
+  for (const r of pub) {
+    if (r.response === "accepted") c.accepted++;
+    else if (r.response === "declined") c.declined++;
+    else c.awaiting++;
+    if (r.viewed_at) c.viewed++;
+  }
+  $("resp-summary").innerHTML =
+    `<span class="pill green">${c.accepted} accepted</span>` +
+    `<span class="pill">${c.declined} declined</span>` +
+    `<span class="pill">${c.awaiting} awaiting</span>` +
+    `<span class="pill">${c.viewed} viewed</span>` +
+    `<span class="pill">${pub.length} published</span>`;
+
+  const needle = $("resp-search").value.trim().toLowerCase();
+  const f = $("resp-filter").value;
+  visibleResp = pub.filter(r => {
+    if (f === "accepted" && r.response !== "accepted") return false;
+    if (f === "declined" && r.response !== "declined") return false;
+    if (f === "awaiting" && r.response) return false;
+    if (f === "notviewed" && r.viewed_at) return false;
+    if (!needle) return true;
+    return `${r.first_name ?? ""} ${r.last_name ?? ""} ${r.email ?? ""}`.toLowerCase().includes(needle);
+  });
+
+  $("resp-rows").innerHTML = visibleResp.map(r => `
+    <tr>
+      <td>${esc((r.last_name||"").toUpperCase())}, ${esc(r.first_name||"")}
+        <div class="muted" style="font-size:11px">${esc(r.email || "— no email —")}</div></td>
+      <td>${r.status ? STATUS_LABEL[r.status] : "—"}</td>
+      <td style="font-size:12px">${r.notified_at ? "yes" : "—"}</td>
+      <td style="font-size:12px">${r.viewed_at ? "yes" : "—"}</td>
+      <td>${r.response === "accepted" ? '<span class="pill green">✓ Accepted</span>'
+            : r.response === "declined" ? '<span class="pill">✗ Declined</span>'
+            : '<span class="muted">awaiting</span>'}
+        ${r.responded_at ? `<div class="muted" style="font-size:11px;margin-top:2px">${new Date(r.responded_at).toLocaleDateString()}</div>` : ""}</td>
+    </tr>`).join("");
+  $("resp-empty").textContent = visibleResp.length ? "" : "No published decisions match.";
 }
 
 function esc(s) { return s == null ? "" : String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch])); }
@@ -344,7 +438,7 @@ function csvCell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? 
 $("export-btn").addEventListener("click", () => {
   const head = ["First name","Last name","Email","Decision","Published","Notified at","Viewed at","Response","Responded at"];
   const lines = [head.map(csvCell).join(",")];
-  for (const r of visibleRows) {
+  for (const r of visibleResp) {
     lines.push([
       r.first_name || "", r.last_name || "", r.email || "",
       r.status ? STATUS_LABEL[r.status] : "",
