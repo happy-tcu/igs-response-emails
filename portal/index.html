@@ -124,24 +124,24 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
 <body>
   <div class="bg" aria-hidden="true">
     <svg viewBox="0 0 1200 800" preserveAspectRatio="xMidYMid slice">
-      <defs>
-        <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse"><path d="M48 0H0V48" fill="none" stroke="#e7e9e4" stroke-width="1"/></pattern>
-        <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient>
-      </defs>
-      <rect width="1200" height="800" fill="url(#grid)"/>
-      <g fill="none" stroke="#cdd0cc" stroke-width="1.2"><circle cx="1050" cy="120" r="60"/><circle cx="1050" cy="120" r="110"/><circle cx="1050" cy="120" r="160"/></g>
-      <g stroke="#cdd0cc" stroke-width="1.2"><line x1="-20" y1="640" x2="260" y2="360"/><line x1="-20" y1="720" x2="340" y2="360"/><line x1="60" y1="800" x2="420" y2="440"/></g>
-      <g stroke="#cdd0cc" stroke-width="1.2"><path d="M200 130 h16 M208 122 v16"/><path d="M940 560 h16 M948 552 v16"/><path d="M520 700 h16 M528 692 v16"/><path d="M120 420 h16 M128 412 v16"/></g>
-      <rect width="1200" height="800" fill="url(#fade)"/>
+      <!-- minimal geometry: rings echo the Isomo swirl -->
+      <g fill="none" stroke="#e6e8e4" stroke-width="1.4">
+        <circle cx="1065" cy="150" r="155"/>
+        <circle cx="1065" cy="150" r="98"/>
+        <rect x="110" y="565" width="120" height="120"/>
+      </g>
+      <circle cx="150" cy="180" r="5" fill="#f4b942"/>
+      <circle cx="174" cy="180" r="5" fill="#1dafec"/>
+      <circle cx="198" cy="180" r="5" fill="#8cc63e"/>
     </svg>
   </div>
   <canvas id="confetti"></canvas>
 
   <header>
     <div class="brand">
-      <img class="mark" src="b2r-logo.png" alt="Bridge2Rwanda" />
+      <img class="mark" src="isomo-logo.png" alt="Isomo" />
       <span class="divider"></span>
-      <div><div class="name">Isom<span>o</span></div><div class="sub">Graduate Scholars</div></div>
+      <div class="sub" style="margin:0">Graduate Scholars</div>
     </div>
     <div class="who" id="who" style="visibility:hidden">
       <span id="who-email"></span>

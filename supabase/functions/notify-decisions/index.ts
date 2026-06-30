@@ -27,7 +27,7 @@ function json(status: number, body: unknown) {
 function emailHtml(firstName: string, link: string): string {
   return `
 <div style="font-family:'Open Sans',-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;color:#4a4b4c">
-  <img src="https://igs-response-emails.vercel.app/portal/b2r-logo.png" alt="Bridge2Rwanda" height="32" style="height:32px;width:auto;margin-bottom:18px"/>
+  <img src="https://igs-response-emails.vercel.app/portal/isomo-logo.png" alt="Isomo" height="34" style="height:34px;width:auto;margin-bottom:18px"/>
   <p style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#7a7c7e;margin:0">Isomo Graduate Scholars</p>
   <h2 style="color:#4a4b4c;margin:4px 0 16px">Your decision is ready, ${firstName}</h2>
   <p style="font-size:15px;line-height:1.6">Thank you for applying to the Isomo Graduate Scholars Program.
