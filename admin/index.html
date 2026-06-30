@@ -135,8 +135,6 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
         <thead>
           <tr>
             <th>Candidate</th>
-            <th style="width:55px">Avg</th>
-            <th style="width:120px" title="yes / strong-maybe / maybe / no">Votes (Y/SM/M/N)</th>
             <th style="width:150px">Decision</th>
             <th style="width:120px">Portal</th>
           </tr>
@@ -225,7 +223,7 @@ supabase.auth.onAuthStateChange((evt, session) => { if (evt === "SIGNED_IN" && s
 async function load() {
   const { data, error } = await supabase.from("v_decision_worklist").select("*");
   if (error) { note(error.message, true); return; }
-  rows = (data || []).sort((a, b) => (b.avg_score ?? -1) - (a.avg_score ?? -1));
+  rows = (data || []).sort((a, b) => (a.last_name||"").localeCompare(b.last_name||""));
   render();
 }
 
@@ -317,8 +315,6 @@ function render() {
     <tr>
       <td>${esc((r.last_name||"").toUpperCase())}, ${esc(r.first_name||"")}
         <div class="muted" style="font-size:11px">${esc(r.email || "— no email —")}</div></td>
-      <td class="num">${r.avg_score ?? "—"}</td>
-      <td class="num" style="font-size:12px">${r.yes_votes}/${r.strong_maybe_votes}/${r.maybe_votes}/${r.no_votes}</td>
       <td>
         ${isAdmin ? `<select data-id="${r.candidate_id}" class="status-sel">
           <option value="">— set —</option>
