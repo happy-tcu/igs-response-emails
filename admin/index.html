@@ -116,10 +116,6 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
           affect candidates with a status set.
         </p>
         <div class="row">
-          <div class="admin-only">
-            <label class="k">Orientation</label>
-            <input id="orientation" value="July 2026" style="max-width:150px" />
-          </div>
           <button id="publish-btn" class="admin-only">Publish decided</button>
           <button id="notify-btn" class="admin-only">Notify applicants</button>
           <button class="ghost" id="refresh-btn">Refresh</button>
@@ -283,7 +279,7 @@ async function setStatus(id, status) {
     if (error) return note(error.message, true);
   } else {
     const { error } = await supabase.from("decisions").upsert(
-      { candidate_id: id, status, orientation: $("orientation").value, decided_by: (await supabase.auth.getUser()).data.user.email },
+      { candidate_id: id, status, decided_by: (await supabase.auth.getUser()).data.user.email },
       { onConflict: "candidate_id" });
     if (error) return note(error.message, true);
   }
