@@ -130,6 +130,7 @@ body{font-family:"Open Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,
           <option value="waitlisted">Waitlisted</option>
           <option value="not_selected">Not selected</option>
         </select>
+        <button class="ghost" id="export-btn">Export CSV</button>
       </div>
       <table>
         <thead>
@@ -173,6 +174,7 @@ const STATUS_LABEL = { selected: "Selected", waitlisted: "Waitlisted", not_selec
 let rows = [];
 let started = false;
 let isAdmin = false;   // admins can set/publish/notify; reviewers are view-only
+let visibleRows = [];  // current filtered worklist, for Export CSV
 
 // ── auth ──────────────────────────────────────────────────────────
 $("google-btn").addEventListener("click", async () => {
@@ -310,6 +312,7 @@ function render() {
     if (!needle) return true;
     return `${r.first_name ?? ""} ${r.last_name ?? ""} ${r.email ?? ""}`.toLowerCase().includes(needle);
   });
+  visibleRows = visible;   // what Export CSV downloads (respects search + filter)
 
   $("rows").innerHTML = visible.map(r => `
     <tr>
@@ -335,6 +338,28 @@ function render() {
 }
 
 function esc(s) { return s == null ? "" : String(s).replace(/[&<>"]/g, ch => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[ch])); }
+
+// ── Export CSV (downloads the currently-filtered worklist) ─────────
+function csvCell(v) { v = v == null ? "" : String(v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+$("export-btn").addEventListener("click", () => {
+  const head = ["First name","Last name","Email","Decision","Published","Notified at","Viewed at","Response","Responded at"];
+  const lines = [head.map(csvCell).join(",")];
+  for (const r of visibleRows) {
+    lines.push([
+      r.first_name || "", r.last_name || "", r.email || "",
+      r.status ? STATUS_LABEL[r.status] : "",
+      r.published ? "yes" : "no",
+      r.notified_at || "", r.viewed_at || "",
+      r.response || "", r.responded_at || "",
+    ].map(csvCell).join(","));
+  }
+  const blob = new Blob(["﻿" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "isomo-decisions.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
 
 start();
 </script>
