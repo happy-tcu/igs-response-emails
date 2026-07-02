@@ -298,6 +298,10 @@ async function signOut() { await supabase.auth.signOut(); location.reload(); }
 
 function initials(s) { return (s || "?").slice(0,2).toUpperCase(); }
 
+// TRIAL MODE: /portal/?trial=1 reads the standalone trial RPCs (trial_decisions).
+// The notifier's magic link carries ?trial=1 for test applicants.
+const TRIAL = new URLSearchParams(location.search).get("trial") === "1";
+
 async function boot() {
   const { data: { session } } = await supabase.auth.getSession();
   if (!session) { booted = false; show("login"); return; }
@@ -309,7 +313,7 @@ async function boot() {
   $("who").style.visibility = "visible";
 
   // fetch this user's published decision via the security-definer RPC
-  const { data, error } = await supabase.rpc("my_decision");
+  const { data, error } = await supabase.rpc(TRIAL ? "trial_my_decision" : "my_decision");
   if (error) {
     show("none");
     $("none-msg").textContent = "We couldn't load your decision right now. Please try again shortly.";
@@ -412,7 +416,7 @@ function wireActions() {
 async function respond(choice) {
   const a = $("accept-btn"), dn = $("decline-btn");
   if (a) a.disabled = true; if (dn) dn.disabled = true;
-  const { error } = await supabase.rpc("respond_to_decision", { p_choice: choice });
+  const { error } = await supabase.rpc(TRIAL ? "trial_respond_to_decision" : "respond_to_decision", { p_choice: choice });
   if (error) {
     alert("Sorry, we couldn't record that: " + error.message);
     if (a) a.disabled = false; if (dn) dn.disabled = false;

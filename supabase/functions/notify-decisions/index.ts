@@ -81,23 +81,32 @@ Deno.serve(async (req) => {
 
     const body = await req.json().catch(() => ({}));
     const resend = !!body?.resend;
+    // TRIAL MODE: caller passes { trial: true } → reads the standalone
+    // `trial_decisions` table and sends applicants to the portal in ?trial=1
+    // mode. Real applicants (candidates/decisions) are never touched.
+    const trial = !!body?.trial;
 
     // 2. Targets: published decisions, with the candidate's email + first name.
-    let query = admin
-      .from("decisions")
-      .select("candidate_id, notified_at, candidates(email, first_name)")
-      .eq("published", true);
+    let query = trial
+      ? admin.from("trial_decisions").select("id, notified_at, email, first_name").eq("published", true)
+      : admin.from("decisions").select("candidate_id, notified_at, candidates(email, first_name)").eq("published", true);
     if (!resend) query = query.is("notified_at", null);
     const { data: rawRows, error: qErr } = await query;
     if (qErr) return json(500, { error: qErr.message });
     const rows = rawRows ?? [];
 
     const targets = rows
-      .map((r: any) => ({
-        candidate_id: r.candidate_id as string,
-        email: ((r.candidates?.email ?? "") as string).trim().toLowerCase(),
-        first_name: (r.candidates?.first_name ?? "there") as string,
-      }))
+      .map((r: any) => (trial
+        ? {
+            candidate_id: r.id as string,
+            email: ((r.email ?? "") as string).trim().toLowerCase(),
+            first_name: (r.first_name ?? "there") as string,
+          }
+        : {
+            candidate_id: r.candidate_id as string,
+            email: ((r.candidates?.email ?? "") as string).trim().toLowerCase(),
+            first_name: (r.candidates?.first_name ?? "there") as string,
+          }))
       .filter((t) => t.email);
     const blanksSkipped = rows.length - targets.length;
 
@@ -116,15 +125,20 @@ Deno.serve(async (req) => {
       try {
         // ensure an auth identity exists for this email (idempotent, pre-confirmed)
         await admin.auth.admin.createUser({ email: t.email, email_confirm: true }).catch(() => {});
+        const redirectTo = trial
+          ? PORTAL_URL + (PORTAL_URL.includes("?") ? "&" : "?") + "trial=1"
+          : PORTAL_URL;
         const { data: linkData, error: linkErr } = await admin.auth.admin.generateLink({
           type: "magiclink",
           email: t.email,
-          options: { redirectTo: PORTAL_URL },
+          options: { redirectTo },
         });
         const link = linkData?.properties?.action_link;
         if (linkErr || !link) throw new Error(linkErr?.message ?? "no action_link");
         await sendEmail(RESEND_API_KEY, MAIL_FROM, t.email, t.first_name, link);
-        await admin.from("decisions").update({ notified_at: new Date().toISOString() }).eq("candidate_id", t.candidate_id);
+        await admin.from(trial ? "trial_decisions" : "decisions")
+          .update({ notified_at: new Date().toISOString() })
+          .eq(trial ? "id" : "candidate_id", t.candidate_id);
         sent++;
       } catch (e) {
         failures.push({ email: t.email, error: String(e) });

@@ -46,7 +46,8 @@ portal/index.html  applicant clicks link ─────────►  shows T
    (magic link, for applicants). Google stays on (for admins, same as the grading platform).
 3. **Allowlist both URLs.** Supabase → Authentication → URL Configuration →
    **Redirect URLs** → add the admin URL and the portal URL
-   (e.g. `https://admin.isomo-rw.com`, `https://decisions.isomo-rw.com`).
+   (`https://igs-response-emails.vercel.app/admin/`,
+   `https://igs-response-emails.vercel.app/portal/`).
 4. **Configure each page.** In `admin/` and `portal/`:
    `cp config.example.js config.js` and fill in `SUPABASE_URL` + the **anon** key.
 5. **Deploy the Edge Function and its secrets:**
@@ -54,8 +55,8 @@ portal/index.html  applicant clicks link ─────────►  shows T
    supabase functions deploy notify-decisions
    supabase secrets set \
      RESEND_API_KEY=...                              # from resend.com (verify your sending domain first)
-     MAIL_FROM="Isomo Graduate Scholars <admissions@isomo-rw.com>" \
-     PORTAL_URL=https://decisions.isomo-rw.com
+     MAIL_FROM="Isomo Graduate Scholars <isomograduate@isomo.rw>" \
+     PORTAL_URL=https://igs-response-emails.vercel.app/portal/
    ```
    (`SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are injected automatically.)
    The function can also be deployed from the Supabase dashboard's Functions editor.

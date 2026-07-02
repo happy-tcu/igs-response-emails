@@ -13,7 +13,7 @@ Env (.env at repo root):
     SUPABASE_SERVICE_ROLE_KEY    service-role key (server-side only)
     RESEND_API_KEY               from resend.com
     PORTAL_URL                   https://decisions.isomo-rw.com   (where index.html is hosted)
-    MAIL_FROM                    "Isomo Graduate Scholars <admissions@isomo-rw.com>"
+    MAIL_FROM                    "Isomo Graduate Scholars <isomograduate@isomo.rw>"
 
 Usage:
     python3 scripts/notify_decisions.py [--dry-run] [--resend] [--limit N]

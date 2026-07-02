@@ -206,6 +206,9 @@ const supabase = createClient(cfg.SUPABASE_URL, cfg.SUPABASE_ANON_KEY, {
 });
 
 const STATUS_LABEL = { selected: "Selected", waitlisted: "Waitlisted", not_selected: "Not selected" };
+// TRIAL MODE: /admin/?trial=1 drives the standalone `trial_decisions` table
+// (set/publish/notify all scoped to it). Default /admin/ is unchanged.
+const TRIAL = new URLSearchParams(location.search).get("trial") === "1";
 let rows = [];
 let started = false;
 let isAdmin = false;   // admins can set/publish/notify; reviewers are view-only
@@ -266,6 +269,18 @@ supabase.auth.onAuthStateChange((evt, session) => { if (evt === "SIGNED_IN" && s
 
 // ── data ──────────────────────────────────────────────────────────
 async function load() {
+  if (TRIAL) {
+    const { data, error } = await supabase.from("trial_decisions").select("*");
+    if (error) { note(error.message, true); return; }
+    rows = (data || []).map(t => ({
+      candidate_id: t.id, first_name: t.first_name, last_name: t.last_name || "",
+      email: t.email, status: t.status, published: t.published,
+      notified_at: t.notified_at, viewed_at: t.viewed_at,
+      response: t.response, responded_at: t.responded_at,
+    })).sort((a, b) => (a.first_name||"").localeCompare(b.first_name||""));
+    render();
+    return;
+  }
   const { data, error } = await supabase.from("v_decision_worklist").select("*");
   if (error) { note(error.message, true); return; }
   rows = (data || []).sort((a, b) => (a.last_name||"").localeCompare(b.last_name||""));
@@ -274,7 +289,11 @@ async function load() {
 
 // ── actions ───────────────────────────────────────────────────────
 async function setStatus(id, status) {
-  if (status === "") {
+  if (TRIAL) {
+    const { error } = await supabase.from("trial_decisions")
+      .update({ status: status === "" ? null : status }).eq("id", id);
+    if (error) return note(error.message, true);
+  } else if (status === "") {
     const { error } = await supabase.from("decisions").delete().eq("candidate_id", id);
     if (error) return note(error.message, true);
   } else {
@@ -292,6 +311,15 @@ $("publish-btn").addEventListener("click", async () => {
   const undecided = rows.filter(r => !r.status).length;
   if (!confirm(`Publish all decisions that have a status set?\n\nThis makes them visible to applicants. ${undecided} candidate(s) without a status are skipped.`)) return;
   await withBusy("publish-btn", async () => {
+    if (TRIAL) {
+      const { data, error } = await supabase.from("trial_decisions")
+        .update({ published: true, published_at: new Date().toISOString() })
+        .not("status", "is", null).select("id");
+      if (error) return note(error.message, true);
+      note(`${(data || []).length} decision(s) are now live in the portal.`);
+      await load();
+      return;
+    }
     const { data, error } = await supabase.rpc("publish_decisions");
     if (error) return note(error.message, true);
     note(`${data} decision(s) are now live in the portal.`);
@@ -302,7 +330,7 @@ $("publish-btn").addEventListener("click", async () => {
 $("notify-btn").addEventListener("click", async () => {
   if (!confirm("Email every published applicant a one-click link to view their decision? Already-notified applicants are skipped.")) return;
   await withBusy("notify-btn", async () => {
-    const { data, error } = await supabase.functions.invoke("notify-decisions", { body: { resend: false } });
+    const { data, error } = await supabase.functions.invoke("notify-decisions", { body: { resend: false, trial: TRIAL } });
     if (error) return note(error.message, true);
     if (data?.error) return note(data.error + (data.duplicates ? ` — duplicates: ${data.duplicates.join(", ")}` : ""), true);
     note(`Sent ${data?.sent ?? 0} email(s).${data?.failed ? " " + data.failed + " failed." : ""}${data?.blanks_skipped ? " " + data.blanks_skipped + " skipped (blank email)." : ""}`);
